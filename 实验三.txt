@@ -1,0 +1,273 @@
+A1-1：Thoroughbred 类建模
+
+public class Thoroughbred {
+    // 私有属性
+    private String mother;
+    private String father;
+    private int birthyear;
+
+    // 构造方法
+    public Thoroughbred(String mother, String father, int birthyear) {
+        this.mother = mother;
+        this.father = father;
+        this.birthyear = birthyear;
+    }
+
+    // 计算当前年龄
+    public int getCurrentAge() {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        int currentYear = cal.get(java.util.Calendar.YEAR);
+        return currentYear - this.birthyear;
+    }
+
+    // 获取父亲信息
+    public String getFather() {
+        return this.father;
+    }
+
+    // 获取母亲信息
+    public String getMother() {
+        return this.mother;
+    }
+
+    // 主方法测试
+    public static void main(String[] args) {
+        Thoroughbred horse = new Thoroughbred("Mare001", "Stallion001", 2018);
+        System.out.println("马的母亲：" + horse.getMother());
+        System.out.println("马的父亲：" + horse.getFather());
+        System.out.println("马的当前年龄：" + horse.getCurrentAge() + "岁");
+    }
+}
+
+A1-2：College 类的聚合与组合关系建模
+
+import java.util.ArrayList;
+import java.util.List;
+
+// 建筑类
+class Building {
+    private String name;
+    private String address;
+
+    public Building(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
+
+    public String getBuildingInfo() {
+        return "建筑名称：" + name + "，地址：" + address;
+    }
+}
+
+// 课程类
+class Course {
+    private String name;
+    private int credit;
+    // 约束：课程关联一个建筑
+    private Building building;
+
+    public Course(String name, int credit, Building building) {
+        this.name = name;
+        this.credit = credit;
+        this.building = building; // 确保课程绑定建筑
+    }
+
+    public String getCourseInfo() {
+        return "课程名称：" + name + "，学分：" + credit + "，授课建筑：" + building.getBuildingInfo();
+    }
+}
+
+// 学院类（聚合Building，组合Course）
+public class College {
+    private String name;
+    // 聚合：学院包含建筑，建筑可独立存在
+    private List<Building> buildings = new ArrayList<>();
+    // 组合：学院包含课程，课程不能脱离学院存在
+    private List<Course> courses = new ArrayList<>();
+
+    public College(String name) {
+        this.name = name;
+    }
+
+    // 添加建筑（聚合）
+    public void addBuilding(Building building) {
+        buildings.add(building);
+    }
+
+    // 添加课程（组合）
+    public void addCourse(Course course) {
+        courses.add(course);
+    }
+
+    // 打印学院信息
+    public void showCollegeInfo() {
+        System.out.println("学院名称：" + name);
+        System.out.println("学院建筑：");
+        for (Building b : buildings) {
+            System.out.println(b.getBuildingInfo());
+        }
+        System.out.println("学院课程：");
+        for (Course c : courses) {
+            System.out.println(c.getCourseInfo());
+        }
+    }
+
+    public static void main(String[] args) {
+        // 创建建筑（可独立存在）
+        Building b1 = new Building("主教学楼", "校园中路1号");
+        Building b2 = new Building("实验楼", "校园西路2号");
+
+        // 创建学院
+        College college = new College("计算机学院");
+        college.addBuilding(b1);
+        college.addBuilding(b2);
+
+        // 创建课程（必须绑定建筑，且属于学院）
+        Course c1 = new Course("软件工程", 3, b1);
+        Course c2 = new Course("计算机网络", 2, b2);
+        college.addCourse(c1);
+        college.addCourse(c2);
+
+        // 展示学院信息
+        college.showCollegeInfo();
+    }
+}
+
+A1-4：网上购物系统类图建模
+import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
+// 订单状态枚举
+enum OrderStatus {
+    CREATE, PAID, SHIPPING, DELIVERED, CANCEL
+}
+
+// 商品类
+class Product {
+    private String title;
+    private double weight;
+    private String description;
+    private double unitPrice; // 单价
+
+    public Product(String title, double weight, String description, double unitPrice) {
+        this.title = title;
+        this.weight = weight;
+        this.description = description;
+        this.unitPrice = unitPrice;
+    }
+
+    public double getPriceForQuantity(int quantity) {
+        return this.unitPrice * quantity;
+    }
+
+    public double getWeight() {
+        return this.weight;
+    }
+}
+
+// 订单详情类
+class OrderDetail {
+    private int quantity;
+    private Product product;
+
+    public OrderDetail(int quantity, Product product) {
+        this.quantity = quantity;
+        this.product = product;
+    }
+
+    // 计算小计
+    public double calculateSubTotal() {
+        return product.getPriceForQuantity(quantity);
+    }
+
+    // 计算重量
+    public double calculateWeight() {
+        return product.getWeight() * quantity;
+    }
+}
+
+// 支付方式父类
+abstract class Payment {
+    protected double amount;
+
+    public Payment(double amount) {
+        this.amount = amount;
+    }
+}
+
+// 信用卡支付
+class Credit extends Payment {
+    private String number;
+    private String type;
+    private String expireDate;
+
+    public Credit(double amount, String number, String type, String expireDate) {
+        super(amount);
+        this.number = number;
+        this.type = type;
+        this.expireDate = expireDate;
+    }
+}
+
+// 订单类
+class Order {
+    private Date createDate;
+    private OrderStatus status;
+    private List<OrderDetail> orderDetails = new ArrayList<>();
+    private Payment payment;
+
+    public Order(Date createDate, OrderStatus status) {
+        this.createDate = createDate;
+        this.status = status;
+    }
+
+    public void addOrderDetail(OrderDetail detail) {
+        orderDetails.add(detail);
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+}
+
+// 客户类
+public class Customer {
+    private String name;
+    private String contact;
+    private String deliveryAddress;
+    private boolean active;
+    private List<Order> orders = new ArrayList<>();
+
+    public Customer(String name, String contact, String deliveryAddress, boolean active) {
+        this.name = name;
+        this.contact = contact;
+        this.deliveryAddress = deliveryAddress;
+        this.active = active;
+    }
+
+    public void addOrder(Order order) {
+        orders.add(order);
+    }
+
+    public static void main(String[] args) {
+        // 创建商品
+        Product p1 = new Product("Java编程思想", 0.5, "经典编程书籍", 89.0);
+        // 创建客户
+        Customer customer = new Customer("张三", "13800138000", "北京市海淀区", true);
+        // 创建订单
+        Order order = new Order(new Date(), OrderStatus.CREATE);
+        // 创建订单详情
+        OrderDetail detail = new OrderDetail(2, p1);
+        order.addOrderDetail(detail);
+        // 创建支付方式
+        Payment payment = new Credit(178.0, "6226000011112222", "VISA", "2028-12");
+        order.setPayment(payment);
+        // 客户添加订单
+        customer.addOrder(order);
+
+        System.out.println("订单小计：" + detail.calculateSubTotal());
+        System.out.println("订单商品重量：" + detail.calculateWeight() + "kg");
+    }
+}
+
